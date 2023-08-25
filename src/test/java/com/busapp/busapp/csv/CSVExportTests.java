@@ -1,17 +1,13 @@
-package com.busapp.busapp;
+package com.busapp.busapp.csv;
 
 import com.busapp.busapp.enums.StopId;
 import com.busapp.busapp.objects.Trip;
-import com.busapp.busapp.service.busRideFacade.BusRideService;
+import com.busapp.busapp.service.busRide.BusRideService;
 import com.busapp.busapp.service.csv.CSVExportService;
-import com.opencsv.exceptions.CsvDataTypeMismatchException;
-import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,9 +16,6 @@ import java.util.List;
 
 @SpringBootTest
 class CSVExportTests {
-
-    @Autowired
-    private BusRideService busRideService;
 
     @Autowired
     private CSVExportService csvExportService;
@@ -50,7 +43,7 @@ class CSVExportTests {
         trip2.setBusId("TEST");
         trip2.setCompanyId("TEST");
         trip2.setFromStopId(StopId.Stop1);
-        trip1.setStartTime(LocalDateTime.now());
+        trip2.setStartTime(LocalDateTime.now());
         trips.add(trip2);
 
         Trip trip3 = new Trip();
@@ -65,7 +58,7 @@ class CSVExportTests {
         trip3.setEndTime(LocalDateTime.now().plusSeconds(20));
         trips.add(trip2);
 
-        csvExportService.exportTripsToCSV(trips);
+        csvExportService.exportTripsToCSV(trips, "test-export-csv", LocalDateTime.now());
     }
 
 }

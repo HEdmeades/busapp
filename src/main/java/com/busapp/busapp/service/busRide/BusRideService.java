@@ -1,4 +1,4 @@
-package com.busapp.busapp.service.busRideFacade;
+package com.busapp.busapp.service.busRide;
 
 import com.busapp.busapp.enums.StopId;
 import com.busapp.busapp.objects.Tap;
@@ -18,24 +18,8 @@ import java.util.stream.Collectors;
 public class BusRideService {
 
     @Autowired
-    private CSVImportService csvImportService;
+    private FairCalculationService fairCalculationService;
 
-    @Autowired
-    private CSVExportService csvExportService;
-
-    public void processAndExportTripsFile(File file){
-        exportTripsToCSV(this.processTripFile(file));
-    }
-
-    public void exportTripsToCSV(List<Trip> trips){
-        csvExportService.exportTripsToCSV(trips);
-    }
-
-    public List<Trip> processTripFile(File file){
-        return calculateTrips(csvImportService.readCSV(Tap.class, file));
-    }
-
-    //Assuming file is a batch file processed EOD
     public List<Trip> calculateTrips(List<Tap> taps) {
         //Map of identifier to list of taps completed
         Map<String, List<Tap>> panActionMap = taps.stream().collect(Collectors.groupingBy(Tap::getIdentifier));
@@ -81,7 +65,7 @@ public class BusRideService {
                     } else {
                         //We have a complete trip
                         trip.setStatus(Trip.Status.COMPLETED);
-                        trip.setChargeAmount(calculateCompletedFair(firstAction.getStopId(), secondAction.getStopId()));
+                        trip.setChargeAmount(fairCalculationService.calculateCompletedFair(firstAction.getStopId(), secondAction.getStopId()));
                     }
 
                     trips.add(trip);
@@ -94,30 +78,12 @@ public class BusRideService {
             Trip trip = new Trip(firstAction);
             trip.setStatus(Trip.Status.INCOMPLETE);
 
-            trip.setChargeAmount(calculateInCompleteFair(firstAction.getStopId()));
+            trip.setChargeAmount(fairCalculationService.calculateInCompleteFair(firstAction.getStopId()));
             trips.add(trip);
         }
 
         return trips;
     }
 
-    public BigDecimal calculateCompletedFair(StopId fromStop, StopId toStop) {
-        if (fromStop.equals(StopId.Stop1) && toStop.equals(StopId.Stop2)
-                || fromStop.equals(StopId.Stop2) && toStop.equals(StopId.Stop1)) {
-            return new BigDecimal("3.25");
-        } else if (fromStop.equals(StopId.Stop2) && toStop.equals(StopId.Stop3)
-                || fromStop.equals(StopId.Stop3) && toStop.equals(StopId.Stop2)) {
-            return new BigDecimal("5.50");
-        }
-
-        return new BigDecimal("7.30");
-    }
-
-    public BigDecimal calculateInCompleteFair(StopId fromStop) {
-        if (fromStop.equals(StopId.Stop3)) {
-            return calculateCompletedFair(fromStop, StopId.Stop1);
-        }
-        return calculateCompletedFair(fromStop, StopId.Stop3);
-    }
 
 }

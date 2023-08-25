@@ -1,9 +1,9 @@
-package com.busapp.busapp;
+package com.busapp.busapp.busRide;
 
 import com.busapp.busapp.enums.StopId;
 import com.busapp.busapp.objects.Tap;
 import com.busapp.busapp.objects.Trip;
-import com.busapp.busapp.service.busRideFacade.BusRideService;
+import com.busapp.busapp.service.busRide.BusRideService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,45 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest
-class BusappApplicationTests {
+class BusRideServiceTests {
 
     @Autowired
     private BusRideService busRideService;
-
-    @Test
-    void contextLoads() {
-    }
-
-    @Test
-    void testFullExampleIncludingExport() {
-        ClassLoader classLoader = getClass().getClassLoader();
-
-        busRideService.processAndExportTripsFile(new File(classLoader.getResource("testFiles/taps.csv").getFile()));
-    }
-
-    @Test
-    void testTapsCSVExampleFile() {
-        ClassLoader classLoader = getClass().getClassLoader();
-
-        List<Trip> trips = busRideService.processTripFile(new File(classLoader.getResource("testFiles/taps.csv").getFile()));
-
-        assert trips.size() == 3;
-
-        Trip trip1 = trips.get(0);
-        assert trip1.getStatus().equals(Trip.Status.CANCELLED);
-        assert trip1.getStartTime().isBefore(trip1.getEndTime());
-        assert trip1.getChargeAmount().equals(new BigDecimal("0"));
-
-        Trip trip2 = trips.get(1);
-        assert trip2.getStatus().equals(Trip.Status.INCOMPLETE);
-        assert trip2.getEndTime() == null;
-        assert trip2.getChargeAmount().equals(new BigDecimal("7.30"));
-
-        Trip trip3 = trips.get(2);
-        assert trip3.getStatus().equals(Trip.Status.COMPLETED);
-        assert trip3.getStartTime().isBefore(trip3.getEndTime());
-        assert trip3.getChargeAmount().equals(new BigDecimal("3.25"));
-    }
 
     @Test
     void testCompletedTripStop1toStop2() {
@@ -263,4 +228,57 @@ class BusappApplicationTests {
         assert trip.getChargeAmount().equals(new BigDecimal("7.30"));
     }
 
+    @Test
+    void testMultipleIncompleteTrips() {
+        List<Tap> taps = new ArrayList<>();
+
+        Tap tapOn1 = new Tap();
+        tapOn1.setId(1);
+        tapOn1.setTapType(Tap.TapType.ON);
+        tapOn1.setStopId(StopId.Stop2);
+        tapOn1.setBusId("Bus1");
+        tapOn1.setCompanyId("Company1");
+        tapOn1.setPan("5500005555555559");
+        tapOn1.setTimeOfTap(LocalDateTime.of(2023, 8, 24, 10, 30));
+        taps.add(tapOn1);
+
+        Tap tapOn2 = new Tap();
+        tapOn2.setId(2);
+        tapOn2.setTapType(Tap.TapType.ON);
+        tapOn2.setStopId(StopId.Stop3);
+        tapOn2.setBusId("Bus1");
+        tapOn2.setCompanyId("Company1");
+        tapOn2.setPan("5500005555555559");
+        tapOn2.setTimeOfTap(LocalDateTime.of(2023, 8, 24, 10, 30));
+        taps.add(tapOn2);
+
+        Tap tapOn3 = new Tap();
+        tapOn3.setId(2);
+        tapOn3.setTapType(Tap.TapType.ON);
+        tapOn3.setStopId(StopId.Stop1);
+        tapOn3.setBusId("Bus1");
+        tapOn3.setCompanyId("Company1");
+        tapOn3.setPan("5500005555555123");
+        tapOn3.setTimeOfTap(LocalDateTime.of(2023, 8, 24, 10, 30));
+        taps.add(tapOn3);
+
+        List<Trip> trips = busRideService.calculateTrips(taps);
+
+        assert trips.size() == 3;
+
+        Trip trip1 = trips.get(0);
+        assert trip1.getStatus().equals(Trip.Status.INCOMPLETE);
+        assert trip1.getEndTime() == null;
+        assert trip1.getChargeAmount().equals(new BigDecimal("7.30"));
+
+        Trip trip2 = trips.get(1);
+        assert trip2.getStatus().equals(Trip.Status.INCOMPLETE);
+        assert trip2.getEndTime() == null;
+        assert trip2.getChargeAmount().equals(new BigDecimal("5.50"));
+
+        Trip trip3 = trips.get(2);
+        assert trip3.getStatus().equals(Trip.Status.INCOMPLETE);
+        assert trip3.getEndTime() == null;
+        assert trip3.getChargeAmount().equals(new BigDecimal("7.30"));
+    }
 }

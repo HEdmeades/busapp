@@ -2,26 +2,23 @@ package com.busapp.busapp.service.csv;
 
 import com.busapp.busapp.objects.Trip;
 import com.opencsv.CSVWriter;
-import com.opencsv.ICSVWriter;
-import com.opencsv.bean.HeaderColumnNameMappingStrategy;
-import com.opencsv.bean.HeaderColumnNameMappingStrategyBuilder;
-import com.opencsv.bean.StatefulBeanToCsv;
-import com.opencsv.bean.StatefulBeanToCsvBuilder;
-import com.opencsv.exceptions.CsvDataTypeMismatchException;
-import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CSVExportService {
 
-    public void exportTripsToCSV(List<Trip> trips){
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+    public final String outputFolder = "./files/out/";
+
+    public void exportTripsToCSV(List<Trip> trips, String fileName, LocalDateTime generationDateTime){
         try {
-            FileWriter streamWriter = new FileWriter("EXPORT_EXAMPLES.csv");
+            FileWriter streamWriter = new FileWriter(outputFolder + String.format("%s-%s.csv", fileName, generationDateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy-HH-mm-ss"))));
             CSVWriter write = new CSVWriter(streamWriter, CSVWriter.DEFAULT_SEPARATOR , CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END);
             List<String[]> lines = new ArrayList<>();
             lines.add(new String[]{

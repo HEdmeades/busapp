@@ -1,4 +1,4 @@
-package com.busapp.busapp;
+package com.busapp.busapp.csv;
 
 import com.busapp.busapp.objects.Tap;
 import com.busapp.busapp.service.csv.CSVImportService;
@@ -19,7 +19,14 @@ class CSVImportTests {
 	private CSVImportService csvImportService;
 
 	@Test
-	void testReadFile(){
+	void testReadCSVFile(){
+		ClassLoader classLoader = getClass().getClassLoader();
+
+		csvImportService.readCSV(String.class, new File(classLoader.getResource("testFiles/empty.csv").getFile()));
+	}
+
+	@Test
+	void testReadTapsCSVFile(){
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 		Validator validator = factory.getValidator();
 
@@ -30,7 +37,6 @@ class CSVImportTests {
 		for (Tap tap : taps) {
 			assert validator.validate(tap).isEmpty();
 		}
-
 	}
 
 }
