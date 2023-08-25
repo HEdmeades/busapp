@@ -1,6 +1,7 @@
 package com.busapp.busapp.objects;
 
 import com.busapp.busapp.enums.StopId;
+import com.busapp.busapp.utils.DateTimeUtils;
 import com.opencsv.bean.AbstractBeanField;
 import com.opencsv.bean.CsvCustomBindByPosition;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
@@ -65,11 +66,8 @@ public class Tap implements Serializable {
 
         @Override
         protected LocalDateTime convert(String s) throws CsvDataTypeMismatchException {
-            if(StringUtils.isBlank(s)) {
-                return null ;
-            }
             try {
-                return LocalDateTime.parse(StringUtils.trimToNull(s), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+                return DateTimeUtils.fileDateStringToLocalDateTime(StringUtils.trimToNull(s));
             }
             catch (DateTimeParseException e) {
                 throw new CsvDataTypeMismatchException(s, LocalDateTime.class, String.format("Could not parse - %s to a date", s));

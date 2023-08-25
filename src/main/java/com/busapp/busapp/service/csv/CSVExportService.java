@@ -1,6 +1,7 @@
 package com.busapp.busapp.service.csv;
 
 import com.busapp.busapp.objects.Trip;
+import com.busapp.busapp.utils.DateTimeUtils;
 import com.opencsv.CSVWriter;
 import org.springframework.stereotype.Service;
 
@@ -36,8 +37,8 @@ public class CSVExportService {
 
             for (Trip trip : trips) {
                 lines.add(new String[]{
-                        trip.getStartTime().toString(),
-                        trip.getEndTime() != null ? trip.getEndTime().toString() : null,
+                        DateTimeUtils.LocalDateTimeToFileDateString(trip.getStartTime()),
+                        trip.getEndTime() != null ? DateTimeUtils.LocalDateTimeToFileDateString(trip.getEndTime()) : null,
                         trip.getDurationSeconds(),
                         trip.getFromStopId().toString(),
                         trip.getToStopId() != null ? trip.getToStopId().toString() : null,
